@@ -1,31 +1,31 @@
-# LAST SIGNAL — Iron Warden
+# 마지막 신호 — 아이언 워든
 
-A self-contained, static-hostable browser boss fight. No build step or server-side code is required.
+픽셀 아트 감성의 브라우저용 탄막 보스전 게임입니다. 별도 빌드나 서버 코드 없이 정적 웹 호스팅에 올려 바로 실행할 수 있습니다.
 
-## Play locally
+## 로컬에서 실행하기
 
-Open `index.html` in a modern browser. For a local server, run `python -m http.server 8000` from this folder and visit `http://localhost:8000`.
+최신 브라우저에서 index.html을 열면 됩니다. 로컬 서버를 사용하려면 이 폴더에서 `python -m http.server 8000`을 실행하고 `http://localhost:8000`에 접속하세요.
 
-## Controls
+## 조작 방법
 
-- **WASD / arrow keys:** move
-- **Mouse:** aim
-- **Move to the spawned glowing missile:** it appears in the arena. Walking up to it mounts the stationary sniper position and adds missiles to your ammo.
-- **MISSILE button or left mouse button while mounted:** each spawned missile gives exactly one shot. After firing, ammo reaches zero and the button disappears; wait for the next missile to spawn. Holding the button never repeat-fires. Combat time slows to 0.1× while aiming. Hits deal 5% of the boss's maximum health normally; below 40%, they deal 10% (30% while exposed), until the boss reaches 30% health; below 30%, damage returns to 5% (15% while exposed).
-- **E:** leave the turret (on mobile, press any movement-pad direction to dismount).
-- **Missile restock:** when your missiles run out, a new missile appears in the arena after a short delay; move to it to mount and restock
-- **Boss dive:** one slower, telegraphed charge is followed by a four-second stomping pursuit with heavy footstep sounds and screen shakes.
-- **Reduced boss damage:** projectile hits and meteor impacts now deal less damage. A dive hit still removes half of current health, once per dive.
-- **Meteors:** timed showers show landing zones before rocks fall; impacts deal damage and create an expanding blast ring.
-- **Healing:** when injured, a glowing green med kit appears after a delay. Move to it to restore up to 35 health.
-- **Pilot health:** starts at 150 (1.5× the original). A boss dive collision removes half of the current health once per dive, rather than defeating the pilot instantly.
-- **Space:** dodge dash (short invulnerability, 1.25 second cooldown)
-- **Q / TIME button:** slow the whole game to 0.1× for 10 seconds; 20-second cooldown. The button is in the desktop footer or above the mobile controls.
-- **Final phase prompt:** during the Warden's orbital purge, the fight slows to 0.45× for 3 seconds and the screen bends slightly. Click/tap the prompt or press Space/Enter once to remove 0.5% of the boss's maximum health.
-- **Shift:** pulse-break ultimate (charges as shots hit the boss)
-- **Mobile:** on-screen movement and aim pads, plus DASH. The MISSILE button appears only after reaching a spawned missile.
-- **How to play:** open the guide from the title screen before deploying for a quick control and survival overview.
+- **WASD / 방향키:** 이동
+- **마우스:** 조준
+- **미사일 발사대:** 경기장에 빛나는 미사일이 나타나면 그곳으로 이동하세요. 발사대에 올라서면 저격 모드가 되고 미사일이 지급됩니다.
+- **미사일 버튼 또는 마우스 왼쪽 버튼:** 미사일 하나당 한 발만 발사할 수 있습니다. 발사 후에는 탄약이 소진되고, 새 미사일이 나타날 때까지 기다려야 합니다. 버튼을 누르고 있어도 연속 발사되지 않습니다. 조준 중에는 전투 시간이 0.1배로 느려집니다. 일반 명중 피해는 보스 최대 체력의 5%이며, 보스 체력이 40% 미만이면 10%(노출 중 30%)로 증가합니다. 보스 체력이 30% 미만이면 5%(노출 중 15%)로 돌아갑니다.
+- **E:** 발사대에서 내려오기. 모바일에서는 이동 패드 방향을 누르면 내려옵니다.
+- **미사일 재보급:** 미사일을 모두 사용하면 잠시 뒤 경기장에 새 미사일이 나타납니다. 그곳으로 이동해 다시 탑승하세요.
+- **보스 돌진:** 느린 예고 돌진 뒤 4초 동안 발을 구르며 추격합니다. 발소리와 화면 흔들림에 주의하세요.
+- **보스 피해:** 일반 탄환과 운석 피해는 낮게 조정되어 있습니다. 돌진에 맞으면 돌진 한 번당 현재 체력이 절반으로 줄어듭니다.
+- **운석:** 일정 간격으로 운석이 떨어집니다. 먼저 표시되는 착지 지점에서 벗어나세요. 충돌하면 피해와 폭발 충격파가 발생합니다.
+- **회복:** 부상을 입으면 잠시 뒤 초록색 구급 키트가 나타납니다. 획득하면 최대 35의 체력을 회복합니다.
+- **조종사 체력:** 최대 체력은 150입니다. 보스 돌진에 맞으면 한 번당 현재 체력의 절반을 잃습니다.
+- **Space:** 짧은 무적 시간이 있는 회피 돌진. 재사용 대기시간은 1.25초입니다.
+- **Q / 시간 버튼:** 10초 동안 게임 속도를 0.1배로 낮춥니다. 재사용 대기시간은 20초입니다.
+- **마지막 페이즈:** 워든의 궤도 폭격 중 3초간 전투가 0.45배로 느려지고 화면이 살짝 휩니다. 화면의 누르세요 문구를 클릭하거나 Space/Enter를 누르면 보스 최대 체력의 0.5%를 깎습니다.
+- **Shift:** 펄스 브레이크 필살기. 미사일이 보스에게 명중하면 게이지가 충전됩니다.
+- **모바일:** 화면의 이동·조준 패드와 회피 버튼을 사용하세요. 미사일 버튼은 미사일 발사대에 도착한 뒤 나타납니다.
+- **게임 방법:** 출격 전 시작 화면의 게임 방법을 열어 조작과 생존 요령을 확인하세요.
 
-## Static hosting
+## 정적 웹 호스팅
 
-Upload `index.html`, `style.css`, and `game.js` together to the root of any static host (for example GitHub Pages, Netlify, or Cloudflare Pages). Keep the three files in the same directory. The game uses no external game libraries; the optional Google Fonts import falls back to system fonts if unavailable.
+index.html, style.css, game.js를 정적 호스팅 서비스의 루트에 함께 올리세요. GitHub Pages, Netlify, Cloudflare Pages 등을 사용할 수 있습니다. 세 파일은 같은 폴더에 있어야 합니다. 외부 게임 라이브러리는 필요하지 않으며, 선택적으로 불러오는 Google Fonts를 사용할 수 없을 때는 시스템 글꼴이 적용됩니다.

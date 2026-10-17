@@ -20,7 +20,7 @@
   function beep(f=440,d=.05,type='square',vol=.025){if(!sound)return;try{audio??=new AudioContext();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=f;g.gain.value=vol;g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+d)}catch{}}
   function startGame(){state='playing';elapsed=0;score=0;phase=1;lastPhase=1;patternTimer=1;specialTimer=14;diveTimer=18;stationTimer=0;meteorTimer=6;healTimer=12;dive=null;gravityWell=null;echoWarnings=[];playerTrace=[];echoSampleTimer=0;bullets=[];playerShots=[];particles=[];warnings=[];meteorWarnings=[];meteors=[];heals=[];fireWasHeld=false;slowFactor=1;timeSlowTimer=0;timeCooldown=0;qteTimer=0;qteCooldown=0;bossDeathFx=null;bossFlash=0;document.body.classList.remove('boss-explosion');ui.qteLabel.textContent='누르세요';document.body.classList.remove('qte-active');ui.howPanel.classList.remove('open');ui.howBtn.setAttribute('aria-expanded','false');ui.howBtn.textContent='게임 방법';document.body.classList.remove('slow-mo');station={x:220,y:338,r:38,stocked:false};Object.assign(player,{x:W/2,y:H*.77,hp:150,inv:1,dash:0,dashCd:0,ult:100,fire:0,missiles:0,mounted:false});Object.assign(boss,{x:W/2,y:132,hp:1100,hit:0});ui.overlay.classList.add('hidden');updateHud();beep(520,.12,'sawtooth');}
   function endGame(win){state=win?'win':'lose';timeSlowTimer=0;qteTimer=0;gravityWell=null;echoWarnings=[];document.body.classList.remove('slow-mo','qte-active');slowFactor=1;if(win){bullets=[];warnings=[];meteorWarnings=[];meteors=[];heals=[];pickups=[];playerShots=[];dive=null;gravityWell=null;echoWarnings=[];bossDeathFx={age:0,next:0,bursts:0};bossFlash=0;document.body.classList.add('boss-explosion');ui.overlay.classList.add('hidden')}else{bossDeathFx=null;document.body.classList.remove('boss-explosion');ui.overlay.classList.remove('hidden')};ui.kicker.textContent=win?'위협 제거 // 09':'신호 두절 // 09';ui.title.innerHTML=win?'승<br><em>리</em>':'패<br><em>배</em>';ui.text.textContent=win?'대피선이 궤도를 벗어났다. 정전된 워든의 코어에서 마지막 음성이 흘러나온다. 하린, 이제 괜찮아.':'신호가 끊겼다. 대피선이 탈출할 때까지 워든을 붙잡아야 한다. 다시 출격할 수 있다.';ui.start.innerHTML=win?'다시 도전 <span>↻</span>':'다시 시도 <span>↻</span>';updateTimeButtons();beep(win?740:100,.35,win?'triangle':'sawtooth');}
-  function toast(s){ui.toast.textContent=s;ui.toast.classList.remove('show');void ui.toast.offsetWidth;ui.toast.classList.add('show')}
+  function toast(){}
   function toggleHowToPlay(){const open=ui.howPanel.classList.toggle('open');ui.howBtn.setAttribute('aria-expanded',String(open));ui.howBtn.textContent=open?'안내 닫기':'게임 방법'}
   function beginQte(){if(state!=='playing'||qteTimer>0||qteCooldown>0)return;qteTimer=3;qteCooldown=14;ui.qteLabel.textContent='누르세요';toast('통신: 코어가 드러났어! 지금 눌러!');beep(420,.2,'triangle',.05)}
   function pressQte(){if(state!=='playing'||qteTimer<=0)return;boss.hp=Math.max(0,boss.hp-boss.max*.005);boss.hit=.24;score+=6;burst(boss.x,boss.y,'#ffe28b',18);const shell=ui.arena.parentElement;shell.classList.remove('qte-hit-shake');void shell.offsetWidth;shell.classList.add('qte-hit-shake');beep(720,.16,'triangle',.06);updateHud()}
@@ -29,7 +29,7 @@
   function activateTimeSlow(){if(state!=='playing'||timeCooldown>0)return;timeSlowTimer=10;timeCooldown=20;updateTimeButtons();toast('시간 감속 // 10초');beep(140,.3,'triangle',.06)}
   function updateTimeButtons(){const active=timeSlowTimer>0,locked=timeCooldown>0;for(const [button,isMobile] of [[ui.desktopTime,false],[ui.mobileTime,true]]){if(!button)continue;button.disabled=state!=='playing'||locked;const label=active?`감속 ${Math.ceil(timeSlowTimer)}초`:locked?`대기 ${Math.ceil(timeCooldown)}초`:isMobile?'시간':'시간 Q // 준비';if(button.textContent!==label)button.textContent=label;button.classList.toggle('active',active)}}
   function spawnStation(){let x=rand(120,W-120),y=rand(250,H-90);for(let i=0;i<8&&Math.hypot(x-player.x,y-player.y)<170;i++){x=rand(120,W-120);y=rand(250,H-90)}station={x,y,r:38,stocked:false};toast('미사일 생성 // 미사일로 이동하세요')}
-  function spawnMeteorVolley(){const count=phase===3?4:phase===2?3:2;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*82;meteorWarnings.push({x:clamp(player.x+spread+rand(-24,24),42,W-42),y:rand(170,H-55),timer:.9+rand(0,.22),r:58})}}
+  function spawnMeteorVolley(){const count=phase===3?4:phase===2?3:2;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*82;meteorWarnings.push({x:clamp(player.x+spread+rand(-24,24),42,W-42),y:rand(170,H-55),timer:.9+rand(0,.22),r:58})}toast('운석 낙하 // 안전한 곳으로 이동하세요!')}
   function spawnHeal(){let x=rand(70,W-70),y=rand(140,H-70);for(let i=0;i<8&&Math.hypot(x-player.x,y-player.y)<150;i++){x=rand(70,W-70);y=rand(140,H-70)}heals.push({x,y,r:27,amount:35,life:16});toast('구급 키트 생성 // 체력을 회복하세요')}
   function dash(){if(state!=='playing'||player.dashCd>0||player.mounted||pointer.down||mobile.fire)return;let dx=(keys.has('d')||keys.has('arrowright')||mobile.right?1:0)-(keys.has('a')||keys.has('arrowleft')||mobile.left?1:0),dy=(keys.has('s')||keys.has('arrowdown')||mobile.down?1:0)-(keys.has('w')||keys.has('arrowup')||mobile.up?1:0);if(!dx&&!dy){dx=Math.cos(angle(player,pointer));dy=Math.sin(angle(player,pointer))}let n=Math.hypot(dx,dy)||1;player.dashDir={x:dx/n,y:dy/n};player.dash=.19;player.dashCd=1.25;player.inv=.42;shake=5;beep(180,.08,'sawtooth')}
   function ultimate(){if(state!=='playing'||player.ult<100)return;player.ult=0;shake=15;bullets=bullets.filter(b=>{if(b.hostile){burst(b.x,b.y,'#63f5ea',4);return false}return true});const damage=dive?495:165;boss.hp-=damage;boss.hit=.25;score+=500;for(let i=0;i<24;i++)particles.push({x:player.x,y:player.y,vx:Math.cos(i*Math.PI/12)*rand(100,330),vy:Math.sin(i*Math.PI/12)*rand(100,330),life:.7,color:'#75fff4',size:rand(2,5)});toast('펄스 브레이크 발동');beep(85,.5,'sawtooth',.08)}
@@ -48,7 +48,7 @@
       const a=base+(i-(count-1)/2)*.72,launch=rand(70,102);
       bullets.push({x:boss.x+Math.cos(a)*36,y:boss.y+Math.sin(a)*36,vx:Math.cos(a)*launch,vy:Math.sin(a)*launch,r:10,damage:0,color:'#ffb84d',hostile:true,life:fuse+.15,splitTimer:fuse,fragmentCount:fragments,fragmentSpeed:speed,age:0});
     }
-    beep(205,.18,'triangle',.05);
+    toast('집속 지뢰 // 빈틈을 확인하세요');beep(205,.18,'triangle',.05);
   }
   // The gravity field pulls during its warning, then bursts while leaving a gap toward the player.
   function spawnGravityWell(){
@@ -56,7 +56,7 @@
     const x=clamp(player.x+rand(-138,138),90,W-90),y=clamp(player.y+rand(-108,108),105,H-75),p=phase;
     const duration=p===1?1.7:p===2?1.5:1.3;
     gravityWell={x,y,radius:p===1?148:p===2?170:192,timer:duration,duration,age:0,pull:p===1?185:p===2?225:265,count:p===1?16:p===2?20:24,speed:p===1?142:p===2?158:175};
-    beep(128,.34,'sawtooth',.055);
+    toast('중력장 // 끌려들어가기 전에 벗어나세요');beep(128,.34,'sawtooth',.055);
   }
   // Mark locations from the pilot's recent movement, then detonate them in sequence.
   function spawnEchoVolley(markers=3,count=15,speed=145,delay=.95){
@@ -66,7 +66,7 @@
       const spot=candidates.find(t=>picked.every(p=>Math.hypot(t.x-p.x,t.y-p.y)>82));
       if(spot){picked.push(spot);echoWarnings.push({x:clamp(spot.x,52,W-52),y:clamp(spot.y,88,H-52),timer:delay+i*.18,radius:46,count,speed,age:0})}
     }
-    beep(330,.16,'triangle',.05);
+    toast('잔상 공격 // 이전 위치에서 벗어나세요');beep(330,.16,'triangle',.05);
   }
   function update(realDt){if(state!=='playing')return;timeSlowTimer=Math.max(0,timeSlowTimer-realDt);timeCooldown=Math.max(0,timeCooldown-realDt);qteCooldown=Math.max(0,qteCooldown-realDt);qteTimer=Math.max(0,qteTimer-realDt);const qteActive=qteTimer>0;ui.qteClock.textContent=qteTimer.toFixed(1)+'초';document.body.classList.toggle('qte-active',qteActive);const fireHeld=pointer.down||mobile.fire,firePressed=fireHeld&&!fireWasHeld;fireWasHeld=fireHeld;const aiming=player.mounted&&player.missiles>0;const slowTarget=(aiming||timeSlowTimer>0)?0.1:qteActive?0.45:1;const slowActive=slowTarget<1;slowFactor+=(slowTarget-slowFactor)*(1-Math.exp(-realDt*12));const dt=realDt*slowFactor;const slowLabel=slowTarget===0.45?'입력 감속 0.45×':'시간 감속 0.1×';if(ui.slow.textContent!==slowLabel)ui.slow.textContent=slowLabel;ui.slow?.classList.toggle('active',slowActive);document.body.classList.toggle('slow-mo',slowActive);updateTimeButtons();elapsed+=dt;patternTimer-=dt;if(!dive)specialTimer-=dt;player.inv=Math.max(0,player.inv-dt);player.dash=Math.max(0,player.dash-dt);player.dashCd=Math.max(0,player.dashCd-dt);boss.hit=Math.max(0,boss.hit-dt);
     phase=boss.hp<boss.max*.33?3:boss.hp<boss.max*.67?2:1;
@@ -139,7 +139,7 @@
       if(g.timer<=0){
         const safe=angle(g,player);
         for(let i=0;i<g.count;i++){const a=safe+Math.PI/g.count+i*Math.PI*2/g.count;shot(g.x,g.y,a,g.speed,8,5,'#c58cff')}
-        burst(g.x,g.y,'#ce9cff',30);particles.push({kind:'ring',x:g.x,y:g.y,vx:0,vy:0,life:.58,maxLife:.58,color:'#d9b5ff',start:14,end:g.radius*.8,width:5,size:0});gravityWell=null;shake=Math.max(shake,8);beep(72,.3,'sawtooth',.075);
+        burst(g.x,g.y,'#ce9cff',30);particles.push({kind:'ring',x:g.x,y:g.y,vx:0,vy:0,life:.58,maxLife:.58,color:'#d9b5ff',start:14,end:g.radius*.8,width:5,size:0});gravityWell=null;shake=Math.max(shake,8);toast('중력장 붕괴 // 빈틈으로 회피하세요');beep(72,.3,'sawtooth',.075);
       }
     }
     if(specialTimer<=0&&!dive){specialTimer=phase===3?8:phase===2?12:15;if(phase===3){beginQte();beep(110,.3,'sawtooth',.05)}}

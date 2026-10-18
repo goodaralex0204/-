@@ -23,13 +23,13 @@
   function toast(){}
   function toggleHowToPlay(){const open=ui.howPanel.classList.toggle('open');ui.howBtn.setAttribute('aria-expanded',String(open));ui.howBtn.textContent=open?'안내 닫기':'게임 방법'}
   function beginQte(){if(state!=='playing'||qteTimer>0||qteCooldown>0)return;qteTimer=3;qteCooldown=14;ui.qteLabel.textContent='누르세요';toast('통신: 코어가 드러났어! 지금 눌러!');beep(420,.2,'triangle',.05)}
-  function pressQte(){if(state!=='playing'||qteTimer<=0)return;boss.hp=Math.max(0,boss.hp-boss.max*.005);boss.hit=.24;score+=6;burst(boss.x,boss.y,'#ffe28b',18);const shell=ui.arena.parentElement;shell.classList.remove('qte-hit-shake');void shell.offsetWidth;shell.classList.add('qte-hit-shake');beep(720,.16,'triangle',.06);updateHud()}
+  function pressQte(){if(state!=='playing'||qteTimer<=0)return;boss.hp=Math.max(0,boss.hp-boss.max*.005);boss.hit=.24;score+=6;burst(boss.x,boss.y,'#ffe28b',18);const shell=ui.arena.parentElement;shell.classList.remove('qte-hit-shake');void shell.offsetWidth;shell.classList.add('qte-hit-shake');beep(720,.16,'triangle',.06);updateHud();if(boss.hp<=0){endGame(true)}}
   function updateBossDeathFx(dt){if(!bossDeathFx)return;const fx=bossDeathFx;fx.age+=dt;if(state==='win'){for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;if(p.life<=0){particles.splice(i,1);continue}if(p.kind!=='ring'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.08,dt);p.vy*=Math.pow(.08,dt)}}}bossFlash=Math.max(0,bossFlash-dt*3.8);if(fx.bursts<10&&fx.age>=fx.next){const last=fx.bursts===9,x=clamp(boss.x+rand(-57,57),55,W-55),y=clamp(boss.y+rand(-62,62),70,H-42),colors=['#ff5369','#ff9d47','#fff0a3','#66f6ed'],color=colors[fx.bursts%colors.length];burst(x,y,color,last?42:24);if(!last)burst(x+rand(-20,20),y+rand(-18,18),fx.bursts%2?'#ffc45b':'#ff6c58',12);const duration=last?.78:.48;particles.push({kind:'ring',x,y,vx:0,vy:0,life:duration,maxLife:duration,color,start:8,end:last?190:110,width:last?9:5,size:0});if(last){burst(boss.x,boss.y,'#fff2bd',44);particles.push({kind:'ring',x:boss.x,y:boss.y,vx:0,vy:0,life:.9,maxLife:.9,color:'#fff2bd',start:16,end:245,width:8,size:0},{kind:'ring',x:boss.x,y:boss.y,vx:0,vy:0,life:1.1,maxLife:1.1,color:'#ff743f',start:28,end:300,width:5,size:0})}fx.bursts++;fx.next+=.17;shake=Math.max(shake,last?28:13);bossFlash=last?.9:.48;beep(last?46:76,.14,'sawtooth',last?.09:.055)}if(fx.age>=2.15){bossDeathFx=null;document.body.classList.remove('boss-explosion');ui.overlay.classList.remove('hidden')}}
   function takeDiveHit(){if(!dive||dive.playerHit||player.inv>0)return;player.hp=Math.max(1,Math.ceil(player.hp/2));player.inv=.85;dive.playerHit=true;shake=Math.max(shake,12);burst(player.x,player.y,'#ff536a',18);toast('돌진에 맞았습니다 // 체력 절반 감소');beep(82,.3,'sawtooth',.08)}
   function activateTimeSlow(){if(state!=='playing'||timeCooldown>0)return;timeSlowTimer=10;timeCooldown=20;updateTimeButtons();toast('시간 감속 // 10초');beep(140,.3,'triangle',.06)}
   function updateTimeButtons(){const active=timeSlowTimer>0,locked=timeCooldown>0;for(const [button,isMobile] of [[ui.desktopTime,false],[ui.mobileTime,true]]){if(!button)continue;button.disabled=state!=='playing'||locked;const label=active?`감속 ${Math.ceil(timeSlowTimer)}초`:locked?`대기 ${Math.ceil(timeCooldown)}초`:isMobile?'시간':'시간 Q // 준비';if(button.textContent!==label)button.textContent=label;button.classList.toggle('active',active)}}
   function spawnStation(){let x=rand(120,W-120),y=rand(250,H-90);for(let i=0;i<8&&Math.hypot(x-player.x,y-player.y)<170;i++){x=rand(120,W-120);y=rand(250,H-90)}station={x,y,r:38,stocked:false};toast('미사일 생성 // 미사일로 이동하세요')}
-  function spawnMeteorVolley(){const count=phase===3?4:phase===2?3:2;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*82;meteorWarnings.push({x:clamp(player.x+spread+rand(-24,24),42,W-42),y:rand(170,H-55),timer:.9+rand(0,.22),r:58})}toast('운석 낙하 // 안전한 곳으로 이동하세요!')}
+  function spawnMeteorVolley(){const count=phase===3?4:phase===2?3:2;for(let i=0;i<count;i++){const spread=(i-(count-1)/2)*82;meteorWarnings.push({x:clamp(player.x+spread+rand(-24,24),42,W-42),y:rand(170,H-55),timer:.9+rand(0,.22),r:58})}}
   function spawnHeal(){let x=rand(70,W-70),y=rand(140,H-70);for(let i=0;i<8&&Math.hypot(x-player.x,y-player.y)<150;i++){x=rand(70,W-70);y=rand(140,H-70)}heals.push({x,y,r:27,amount:35,life:16});toast('구급 키트 생성 // 체력을 회복하세요')}
   function dash(){if(state!=='playing'||player.dashCd>0||player.mounted||pointer.down||mobile.fire)return;let dx=(keys.has('d')||keys.has('arrowright')||mobile.right?1:0)-(keys.has('a')||keys.has('arrowleft')||mobile.left?1:0),dy=(keys.has('s')||keys.has('arrowdown')||mobile.down?1:0)-(keys.has('w')||keys.has('arrowup')||mobile.up?1:0);if(!dx&&!dy){dx=Math.cos(angle(player,pointer));dy=Math.sin(angle(player,pointer))}let n=Math.hypot(dx,dy)||1;player.dashDir={x:dx/n,y:dy/n};player.dash=.19;player.dashCd=1.25;player.inv=.42;shake=5;beep(180,.08,'sawtooth')}
   function ultimate(){if(state!=='playing'||player.ult<100)return;player.ult=0;shake=15;bullets=bullets.filter(b=>{if(b.hostile){burst(b.x,b.y,'#63f5ea',4);return false}return true});const damage=dive?495:165;boss.hp-=damage;boss.hit=.25;score+=500;for(let i=0;i<24;i++)particles.push({x:player.x,y:player.y,vx:Math.cos(i*Math.PI/12)*rand(100,330),vy:Math.sin(i*Math.PI/12)*rand(100,330),life:.7,color:'#75fff4',size:rand(2,5)});toast('펄스 브레이크 발동');beep(85,.5,'sawtooth',.08)}
@@ -37,6 +37,12 @@
   function shot(x,y,a,speed,damage=8,r=4,color='#ff6678'){bullets.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r,damage,color,hostile:true,life:5})}
   function aimed(n=5,spread=.18,speed=185){const base=angle(boss,player);for(let i=0;i<n;i++)shot(boss.x,boss.y,base+(i-(n-1)/2)*spread,speed,8,5,'#ff5b70')}
   function ring(n=18,speed=150,offset=0,color='#ffb44e'){for(let i=0;i<n;i++)shot(boss.x,boss.y,offset+i*Math.PI*2/n,speed,7,5,color)}
+  function spiralVolley(count=14,speed=150,curve=.8,offset=0,color='#78eaff'){
+    for(let i=0;i<count;i++){
+      const a=offset+i*Math.PI*2/count;
+      bullets.push({x:boss.x+Math.cos(a)*30,y:boss.y+Math.sin(a)*30,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:5,damage:8,color,hostile:true,life:5,curve,speed,age:0});
+    }
+  }
   function radialAimed(){for(let i=0;i<3;i++){const a=angle(boss,player)+i*Math.PI*2/3;shot(boss.x,boss.y,a,145,8,6,'#ff5b70')}}
   // Inspired by classic robot-boss tracer lasers and zigzag drone volleys.
   function zigzagVolley(count=5){for(let i=0;i<count;i++){const lane=(i-(count-1)/2)*30;bullets.push({x:boss.x+lane,y:boss.y+24,vx:lane*.18,vy:205,r:5,damage:7,color:'#72d9ff',hostile:true,life:4,wiggle:rand(75,120),seed:i*1.7,age:0})}}
@@ -48,7 +54,7 @@
       const a=base+(i-(count-1)/2)*.72,launch=rand(70,102);
       bullets.push({x:boss.x+Math.cos(a)*36,y:boss.y+Math.sin(a)*36,vx:Math.cos(a)*launch,vy:Math.sin(a)*launch,r:10,damage:0,color:'#ffb84d',hostile:true,life:fuse+.15,splitTimer:fuse,fragmentCount:fragments,fragmentSpeed:speed,age:0});
     }
-    toast('집속 지뢰 // 빈틈을 확인하세요');beep(205,.18,'triangle',.05);
+    beep(205,.18,'triangle',.05);
   }
   // The gravity field pulls during its warning, then bursts while leaving a gap toward the player.
   function spawnGravityWell(){
@@ -56,7 +62,7 @@
     const x=clamp(player.x+rand(-138,138),90,W-90),y=clamp(player.y+rand(-108,108),105,H-75),p=phase;
     const duration=p===1?1.7:p===2?1.5:1.3;
     gravityWell={x,y,radius:p===1?148:p===2?170:192,timer:duration,duration,age:0,pull:p===1?185:p===2?225:265,count:p===1?16:p===2?20:24,speed:p===1?142:p===2?158:175};
-    toast('중력장 // 끌려들어가기 전에 벗어나세요');beep(128,.34,'sawtooth',.055);
+    beep(128,.34,'sawtooth',.055);
   }
   // Mark locations from the pilot's recent movement, then detonate them in sequence.
   function spawnEchoVolley(markers=3,count=15,speed=145,delay=.95){
@@ -66,7 +72,7 @@
       const spot=candidates.find(t=>picked.every(p=>Math.hypot(t.x-p.x,t.y-p.y)>82));
       if(spot){picked.push(spot);echoWarnings.push({x:clamp(spot.x,52,W-52),y:clamp(spot.y,88,H-52),timer:delay+i*.18,radius:46,count,speed,age:0})}
     }
-    toast('잔상 공격 // 이전 위치에서 벗어나세요');beep(330,.16,'triangle',.05);
+    beep(330,.16,'triangle',.05);
   }
   function update(realDt){if(state!=='playing')return;timeSlowTimer=Math.max(0,timeSlowTimer-realDt);timeCooldown=Math.max(0,timeCooldown-realDt);qteCooldown=Math.max(0,qteCooldown-realDt);qteTimer=Math.max(0,qteTimer-realDt);const qteActive=qteTimer>0;ui.qteClock.textContent=qteTimer.toFixed(1)+'초';document.body.classList.toggle('qte-active',qteActive);const fireHeld=pointer.down||mobile.fire,firePressed=fireHeld&&!fireWasHeld;fireWasHeld=fireHeld;const aiming=player.mounted&&player.missiles>0;const slowTarget=(aiming||timeSlowTimer>0)?0.1:qteActive?0.45:1;const slowActive=slowTarget<1;slowFactor+=(slowTarget-slowFactor)*(1-Math.exp(-realDt*12));const dt=realDt*slowFactor;const slowLabel=slowTarget===0.45?'입력 감속 0.45×':'시간 감속 0.1×';if(ui.slow.textContent!==slowLabel)ui.slow.textContent=slowLabel;ui.slow?.classList.toggle('active',slowActive);document.body.classList.toggle('slow-mo',slowActive);updateTimeButtons();elapsed+=dt;patternTimer-=dt;if(!dive)specialTimer-=dt;player.inv=Math.max(0,player.inv-dt);player.dash=Math.max(0,player.dash-dt);player.dashCd=Math.max(0,player.dashCd-dt);boss.hit=Math.max(0,boss.hit-dt);
     phase=boss.hp<boss.max*.33?3:boss.hp<boss.max*.67?2:1;
@@ -100,34 +106,37 @@
     else{const tired=boss.hp<boss.max*.4,moveScale=tired?.62:1;boss.x=W/2+Math.sin(elapsed*.62*moveScale)*125*moveScale;boss.y=133+Math.sin(elapsed*1.1*moveScale)*14*moveScale}
     if(patternTimer<=0&&!dive){
       if(phase===1){
-        const p=Math.floor(elapsed/4)%7;
+        const p=Math.floor(elapsed/4)%8;
         if(p===0){aimed(7,.24,205);shot(boss.x,boss.y,angle(boss,player)+.5,190,7,4,'#ffc05b');shot(boss.x,boss.y,angle(boss,player)-.5,190,7,4,'#ffc05b')}
         else if(p===1){ring(20,150,elapsed*.48);aimed(3,.16,175)}
         else if(p===2){for(let j=-3;j<=3;j++)shot(boss.x,boss.y,Math.PI/2+j*.105,195,6,5,'#ffc05b');zigzagVolley(3)}
         else if(p===3){hunterVolley(2,125,1.05);patternTimer=1.35}
         else if(p===4){splitVolley(2,14,145,1.2);patternTimer=1.85}
         else if(p===5){spawnGravityWell();patternTimer=2.35}
-        else{spawnEchoVolley(2,13,138,.95);patternTimer=2.2}
+        else if(p===6){spawnEchoVolley(2,13,138,.95);patternTimer=2.2}
+        else{spiralVolley(13,148,.7,elapsed*.25,'#78eaff');aimed(3,.15,175);patternTimer=2.35}
         if(p<3)patternTimer=.92;
       }else if(phase===2){
-        const p=Math.floor(elapsed/3.2)%7;
+        const p=Math.floor(elapsed/3.2)%8;
         if(p===0){aimed(8,.27,225);radialAimed()}
         else if(p===1){ring(22,168,elapsed*.72,'#ff6b78');aimed(3,.2,195)}
         else if(p===2){for(let j=0;j<8;j++)shot(boss.x,boss.y,Math.PI/2+(j-3.5)*.09+Math.sin(elapsed)*.1,230,7,5,'#ffc05b');radialAimed();zigzagVolley(4)}
         else if(p===3){hunterVolley(3,155,1.25);ring(12,130,elapsed*.5,'#a98bff');patternTimer=1.65}
         else if(p===4){splitVolley(3,17,155,1.08);aimed(3,.16,185);patternTimer=1.9}
         else if(p===5){spawnGravityWell();patternTimer=2.15}
-        else{spawnEchoVolley(3,16,155,.92);patternTimer=2.15}
+        else if(p===6){spawnEchoVolley(3,16,155,.92);patternTimer=2.15}
+        else{spiralVolley(19,166,.9,-elapsed*.3,'#a98bff');hunterVolley(2,138,1.1);patternTimer=2.25}
         if(p<3)patternTimer=.7;
       }else{
-        const p=Math.floor(elapsed/2.6)%7;
+        const p=Math.floor(elapsed/2.6)%8;
         if(p===0){ring(24,190,elapsed*1.05,'#ff5d76');aimed(4,.22,235);zigzagVolley(4)}
         else if(p===1){for(let j=0;j<12;j++)shot(boss.x,boss.y,Math.PI/2+(j-5.5)*.085+Math.sin(elapsed*2)*.04,235,7,5,'#ffc05b');radialAimed()}
         else if(p===2){ring(18,150,-elapsed*.7,'#ff5d76');radialAimed();aimed(4,.23,225);zigzagVolley(5)}
         else if(p===3){hunterVolley(4,180,1.4);aimed(4,.16,215);patternTimer=2.2}
         else if(p===4){splitVolley(4,20,170,.98);ring(12,125,elapsed*.8,'#ff8d54');patternTimer=2.05}
         else if(p===5){spawnGravityWell();hunterVolley(2,155,1.25);patternTimer=2.3}
-        else{spawnEchoVolley(4,19,170,.88);patternTimer=2.15}
+        else if(p===6){spawnEchoVolley(4,19,170,.88);patternTimer=2.15}
+        else{spiralVolley(26,184,1.05,elapsed*.4,'#ff79c6');splitVolley(2,14,150,1.15);patternTimer=2.25}
         if(p<3)patternTimer=.56;
       }
     }
@@ -139,7 +148,7 @@
       if(g.timer<=0){
         const safe=angle(g,player);
         for(let i=0;i<g.count;i++){const a=safe+Math.PI/g.count+i*Math.PI*2/g.count;shot(g.x,g.y,a,g.speed,8,5,'#c58cff')}
-        burst(g.x,g.y,'#ce9cff',30);particles.push({kind:'ring',x:g.x,y:g.y,vx:0,vy:0,life:.58,maxLife:.58,color:'#d9b5ff',start:14,end:g.radius*.8,width:5,size:0});gravityWell=null;shake=Math.max(shake,8);toast('중력장 붕괴 // 빈틈으로 회피하세요');beep(72,.3,'sawtooth',.075);
+        burst(g.x,g.y,'#ce9cff',30);particles.push({kind:'ring',x:g.x,y:g.y,vx:0,vy:0,life:.58,maxLife:.58,color:'#d9b5ff',start:14,end:g.radius*.8,width:5,size:0});gravityWell=null;shake=Math.max(shake,8);beep(72,.3,'sawtooth',.075);
       }
     }
     if(specialTimer<=0&&!dive){specialTimer=phase===3?8:phase===2?12:15;if(phase===3){beginQte();beep(110,.3,'sawtooth',.05)}}
@@ -147,7 +156,7 @@
     if(!dive){meteorTimer-=dt;if(meteorTimer<=0){spawnMeteorVolley();meteorTimer=phase===3?5.8:phase===2?7.2:9.2}}
     for(let i=meteorWarnings.length-1;i>=0;i--){const m=meteorWarnings[i];m.timer-=dt;if(m.timer<=0){const sx=clamp(m.x+rand(-145,145),30,W-30),sy=-48,dx=m.x-sx,dy=m.y-sy,len=Math.hypot(dx,dy)||1;meteors.push({x:sx,y:sy,tx:m.x,ty:m.y,ux:dx/len,uy:dy/len,speed:465+phase*45,r:14+phase*2,spin:rand(-3,3),angle:rand(0,Math.PI*2)});meteorWarnings.splice(i,1)}}
     for(let i=meteors.length-1;i>=0;i--){const m=meteors[i],dx=m.tx-m.x,dy=m.ty-m.y,len=Math.hypot(dx,dy)||1,step=m.speed*dt;m.angle+=m.spin*dt;if(len<=step){m.x=m.tx;m.y=m.ty;burst(m.x,m.y,'#ff7139',24);burst(m.x,m.y,'#ffd17b',12);particles.push({kind:'ring',x:m.x,y:m.y,vx:0,vy:0,life:.48,maxLife:.48,color:'#ffad58',start:12,end:88,width:4,size:0});shake=Math.max(shake,5);if(Math.hypot(player.x-m.x,player.y-m.y)<58&&player.inv<=0){player.hp-=24;player.inv=.7;burst(player.x,player.y,'#ff714c',14);toast('운석 충돌');beep(82,.22,'sawtooth',.08)}else beep(58,.2,'sawtooth',.065);meteors.splice(i,1)}else{m.x+=m.ux*step;m.y+=m.uy*step}}
-    for(const b of bullets){b.age=(b.age||0)+dt;if(b.splitTimer!==undefined){b.splitTimer-=dt;if(b.splitTimer<=0){burst(b.x,b.y,'#ffd17b',14);particles.push({kind:'ring',x:b.x,y:b.y,vx:0,vy:0,life:.42,maxLife:.42,color:'#ffe29a',start:8,end:55,width:3,size:0});const safe=angle(b,player);for(let j=0;j<b.fragmentCount;j++){const a=safe+Math.PI/b.fragmentCount+j*Math.PI*2/b.fragmentCount;bullets.push({x:b.x,y:b.y,vx:Math.cos(a)*b.fragmentSpeed,vy:Math.sin(a)*b.fragmentSpeed,r:4,damage:7,color:'#ffd17b',hostile:true,life:3.5,age:0})}b.life=0;continue}}if(b.homing){b.arm=Math.max(0,b.arm-dt);if(b.arm===0){const current=Math.atan2(b.vy,b.vx),target=angle(b,player),turn=Math.atan2(Math.sin(target-current),Math.cos(target-current)),next=current+clamp(turn,-b.turnRate*dt,b.turnRate*dt);b.vx=Math.cos(next)*b.speed;b.vy=Math.sin(next)*b.speed}}b.x+=((b.vx||0)+(b.wiggle?Math.sin(b.age*6+b.seed)*b.wiggle:0))*dt;b.y+=(b.vy||0)*dt;b.life-=dt;if(b.hostile&&b.splitTimer===undefined&&player.inv<=0&&Math.hypot(player.x-b.x,player.y-b.y)<player.r+b.r){player.hp-=b.damage;b.life=0;player.inv=.55;shake=8;burst(player.x,player.y,'#50e9ea',8);beep(120,.1,'sawtooth')}}bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<W+30&&b.y>-40&&b.y<H+40);
+    for(const b of bullets){b.age=(b.age||0)+dt;if(b.splitTimer!==undefined){b.splitTimer-=dt;if(b.splitTimer<=0){burst(b.x,b.y,'#ffd17b',14);particles.push({kind:'ring',x:b.x,y:b.y,vx:0,vy:0,life:.42,maxLife:.42,color:'#ffe29a',start:8,end:55,width:3,size:0});const safe=angle(b,player);for(let j=0;j<b.fragmentCount;j++){const a=safe+Math.PI/b.fragmentCount+j*Math.PI*2/b.fragmentCount;bullets.push({x:b.x,y:b.y,vx:Math.cos(a)*b.fragmentSpeed,vy:Math.sin(a)*b.fragmentSpeed,r:4,damage:7,color:'#ffd17b',hostile:true,life:3.5,age:0})}b.life=0;continue}}if(b.homing){b.arm=Math.max(0,b.arm-dt);if(b.arm===0){const current=Math.atan2(b.vy,b.vx),target=angle(b,player),turn=Math.atan2(Math.sin(target-current),Math.cos(target-current)),next=current+clamp(turn,-b.turnRate*dt,b.turnRate*dt);b.vx=Math.cos(next)*b.speed;b.vy=Math.sin(next)*b.speed}}if(b.curve){const next=Math.atan2(b.vy,b.vx)+b.curve*dt;b.vx=Math.cos(next)*b.speed;b.vy=Math.sin(next)*b.speed}b.x+=((b.vx||0)+(b.wiggle?Math.sin(b.age*6+b.seed)*b.wiggle:0))*dt;b.y+=(b.vy||0)*dt;b.life-=dt;if(b.hostile&&b.splitTimer===undefined&&player.inv<=0&&Math.hypot(player.x-b.x,player.y-b.y)<player.r+b.r){player.hp-=b.damage;b.life=0;player.inv=.55;shake=8;burst(player.x,player.y,'#50e9ea',8);beep(120,.1,'sawtooth')}}bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<W+30&&b.y>-40&&b.y<H+40);
     for(const s of playerShots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;s.trail=(s.trail||0)+dt;if(s.trail>.035){s.trail=0;particles.push({x:s.x,y:s.y,vx:-s.vx*.08+rand(-14,14),vy:-s.vy*.08+rand(-14,14),life:.22,color:'#ff9e55',size:rand(2,4)})}if(Math.hypot(s.x-boss.x,s.y-boss.y)<boss.r){s.life=0;const tired=boss.hp<boss.max*.4,exhausted=boss.hp<=boss.max*.3,damage=boss.max*(tired&&!exhausted?(dive?.30:.10):(dive?.15:.05));boss.hp-=damage;boss.hit=.2;score+=Math.round(damage);player.ult=Math.min(100,player.ult+.8);burst(s.x,s.y,'#ffb84d',26);particles.push({kind:'ring',x:s.x,y:s.y,vx:0,vy:0,life:.44,maxLife:.44,color:'#fff2ad',start:8,end:74,width:5,size:0});particles.push({kind:'ring',x:s.x,y:s.y,vx:0,vy:0,life:.62,maxLife:.62,color:'#ff9e42',start:16,end:108,width:3,size:0});shake=Math.max(shake,6);beep(520,.12,'triangle',.055)}}playerShots=playerShots.filter(s=>s.life>0&&s.x>-20&&s.x<W+20&&s.y>-20&&s.y<H+20);
     for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.vx*=.97;p.vy*=.97}particles=particles.filter(p=>p.life>0);
     if(player.hp<=0){player.hp=0;updateHud();endGame(false)}else if(boss.hp<=0){boss.hp=0;updateHud();endGame(true)}updateHud();
